@@ -46,9 +46,12 @@ class Base64ImageOutput:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                {"images": ("IMAGE", ), },
-                }
+        return {
+            "required": {
+                "images": ("IMAGE", ),
+                "extension": (['png', 'jpeg', 'webp'],),
+            },
+        }
 
     RETURN_TYPES = ()
 
@@ -58,15 +61,14 @@ class Base64ImageOutput:
 
     CATEGORY = "BASE64"
 
-    def output_image(self, images: list[torch.Tensor]):
+    def output_image(self, images: list[torch.Tensor], extension: str):
         base64_images = []
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
 
             buffered = io.BytesIO()
-            img.save(buffered, optimize=False,
-                    format='png', compress_level=4)
+            img.save(buffered, optimize=False, format=extension, compress_level=4)
 
             base64_image = base64.b64encode(buffered.getvalue()).decode()
             base64_images.append(base64_image)
