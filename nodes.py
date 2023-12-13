@@ -22,11 +22,11 @@ class Base64ImageInput:
 
     RETURN_TYPES = ("IMAGE",)
 
-    FUNCTION = "test"
+    FUNCTION = "input_image"
 
-    CATEGORY = "A8R8"
+    CATEGORY = "BASE64"
 
-    def test(self, bas64_image):
+    def input_image(self, bas64_image):
         if bas64_image:
             image_bytes = base64.b64decode(bas64_image)
 
@@ -52,24 +52,26 @@ class Base64ImageOutput:
 
     RETURN_TYPES = ()
 
-    FUNCTION = "test"
+    FUNCTION = "output_image"
 
     OUTPUT_NODE = True
 
-    CATEGORY = "A8R8"
+    CATEGORY = "BASE64"
 
-    def test(self, images: list[torch.Tensor]):
-        image = images[0]
-        i = 255. * image.cpu().numpy()
-        img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+    def output_image(self, images: list[torch.Tensor]):
+        base64_images = []
+        for image in images:
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
 
-        buffered = io.BytesIO()
-        img.save(buffered, optimize=False,
-                 format='png', compress_level=4)
+            buffered = io.BytesIO()
+            img.save(buffered, optimize=False,
+                    format='png', compress_level=4)
 
-        base64_image = base64.b64encode(buffered.getvalue()).decode()
+            base64_image = base64.b64encode(buffered.getvalue()).decode()
+            base64_images.append(base64_image)
 
-        return {"ui": {"images": [base64_image]}}
+        return {"ui": {"images": base64_images}}
 
 
 # A dictionary that contains all nodes you want to export with their names
